@@ -9,6 +9,8 @@ import gemini from "@/assets/gemini.svg";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import "./md.css";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 const Settings: ChromeAIChatSettings = {
   temperature: 0.5,
@@ -33,11 +35,17 @@ const Settings: ChromeAIChatSettings = {
   ],
 };
 
-const systemPrompt = "you are a helpful ai";
-const introPrompt = "**Hello**, I am Gemini Nano. How can I help you today?";
+// const systemPrompt = "you are a helpful ai";
+// const introPrompt = "**Hello**, I am Gemini Nano. How can I help you today?";
 
 function App() {
   document.body.className = "dark";
+  const [systemPrompt, setSystemPrompt] = useState<string>(
+    "you are a helpful ai"
+  );
+  const [introPrompt, setIntroPrompt] = useState<string>(
+    "**Hello**, I am Gemini Nano. How can I help you today?"
+  );
   const [messages, setMessages] = useState<CoreMessage[]>([
     {
       role: "system",
@@ -50,13 +58,19 @@ function App() {
   ]);
   const [input, setInput] = useState("");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) {
     // scrollToBottom();
     e.preventDefault();
     const newMessages: CoreMessage[] = [
       ...messages,
       { content: input, role: "user" },
     ];
+
+    if (!input) {
+      newMessages.pop();
+    }
 
     setInput("");
     setMessages(newMessages);
@@ -79,7 +93,9 @@ function App() {
     <main className="h-full w-full flex flex-col pb-5">
       <div className="p-5 w-full flex flex-row justify between">
         <div className="flex flex-row items-center gap-10">
-          <Menu />
+          <motion.div whileHover={{ scale: 1.2, rotateX: 50 }}>
+            <Menu className="hover:cursor-pointer" />
+          </motion.div>
           <div className="flex flex-row gap-3">
             <Avatar>
               <AvatarImage src={gemini} />
@@ -112,23 +128,34 @@ function App() {
               );
             } else if (message.role === "assistant") {
               return (
-                <div key={index} className="flex flex-row gap-4 justify-start">
-                  <Avatar>
-                    <AvatarImage src={gemini} />
-                    <AvatarFallback>GM</AvatarFallback>
-                  </Avatar>
-                  <div className="bg-gray-700 rounded-lg p-3">
-                    <MemoizedReactMarkdown className={"prose"}>
-                      {/* @ts-expect-error - wrong types */}
-                      {message.content}
-                    </MemoizedReactMarkdown>
+                <div className="flex flex-col text-gray-500 gap-2">
+                  <div className="flex gap-3 flex-row">
+                    Gemini{" "}
+                    <Badge className="bg-gray-800 text-gray-400">
+                      Local Ai
+                    </Badge>
+                  </div>
+                  <div
+                    key={index}
+                    className="flex flex-row gap-4 justify-start"
+                  >
+                    <Avatar>
+                      <AvatarImage src={gemini} />
+                      <AvatarFallback>GM</AvatarFallback>
+                    </Avatar>
+                    <div className="bg-gray-700 text-white rounded-lg p-3">
+                      <MemoizedReactMarkdown className={"prose"}>
+                        {/* @ts-expect-error - wrong types */}
+                        {message.content}
+                      </MemoizedReactMarkdown>
+                    </div>
                   </div>
                 </div>
               );
             }
           })}
         </div>
-        <div className="flex flex-row gap-5">
+        <div className="flex flex-row gap-2">
           <Input
             type="text"
             onChange={(e) => {
@@ -137,9 +164,11 @@ function App() {
             value={input}
             placeholder="Message Gemini Nano..."
           />
-          <Button variant="outline" onClick={handleSubmit}>
-            Send
-          </Button>
+          <motion.div whileHover={{ scale: 1.2, rotateX: -30 }}>
+            <Button variant="outline" onClick={handleSubmit}>
+              Send
+            </Button>
+          </motion.div>
         </div>
       </div>
     </main>
