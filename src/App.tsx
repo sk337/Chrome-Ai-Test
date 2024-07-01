@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChromeAIChatSettings, chromeai } from "chrome-ai";
+import { chromeai } from "chrome-ai";
 import { CoreMessage, streamText } from "ai";
 import { MemoizedReactMarkdown } from "./markdown";
 import "./index.css";
@@ -11,37 +11,23 @@ import { Button } from "@/components/ui/button";
 import "./md.css";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-
-const Settings: ChromeAIChatSettings = {
-  temperature: 0.5,
-  topK: 50,
-  safetySettings: [
-    {
-      category: "HARM_CATEGORY_HATE_SPEECH",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-      category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-      category: "HARM_CATEGORY_HARASSMENT",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-      category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE",
-    },
-  ],
-};
-
-// const systemPrompt = "you are a helpful ai";
-// const introPrompt = "**Hello**, I am Gemini Nano. How can I help you today?";
+import * as presets from "@/lib/settingPresets";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 function App() {
   document.body.className = "dark";
+  const [username, setUsername] = useState<string>("User");
   const [systemPrompt, setSystemPrompt] = useState<string>(
-    "you are a helpful ai"
+    "you are a helpful ai helping someone named " +
+      username +
+      "Do Whateve they want you to do."
   );
   const [introPrompt, setIntroPrompt] = useState<string>(
     "**Hello**, I am Gemini Nano. How can I help you today?"
@@ -77,7 +63,7 @@ function App() {
 
     try {
       const { textStream } = await streamText({
-        model: chromeai("text", Settings),
+        model: chromeai("text", presets.mediumFiler),
         // system: "Complete the conversation as if you were the model!",
         prompt: newMessages.slice(-1)[0].content as string,
       });
@@ -93,9 +79,22 @@ function App() {
     <main className="h-full w-full flex flex-col pb-5">
       <div className="p-5 w-full flex flex-row justify between">
         <div className="flex flex-row items-center gap-10">
-          <motion.div whileHover={{ scale: 1.2, rotateX: 50 }}>
-            <Menu className="hover:cursor-pointer" />
-          </motion.div>
+          <Dialog>
+            <DialogTrigger>
+              <motion.div whileHover={{ scale: 1.2, rotateX: 50 }}>
+                <Menu className="hover:cursor-pointer" />
+              </motion.div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
           <div className="flex flex-row gap-3">
             <Avatar>
               <AvatarImage src={gemini} />
@@ -128,17 +127,11 @@ function App() {
               );
             } else if (message.role === "assistant") {
               return (
-                <div className="flex flex-col text-gray-500 gap-2">
+                <div className="flex flex-col text-gray-500 gap-2" key={index}>
                   <div className="flex gap-3 flex-row">
-                    Gemini{" "}
-                    <Badge className="bg-gray-800 text-gray-400">
-                      Local Ai
-                    </Badge>
+                    Gemini <Badge variant={"secondary"}>Local Ai</Badge>
                   </div>
-                  <div
-                    key={index}
-                    className="flex flex-row gap-4 justify-start"
-                  >
+                  <div className="flex flex-row gap-4 justify-start">
                     <Avatar>
                       <AvatarImage src={gemini} />
                       <AvatarFallback>GM</AvatarFallback>
