@@ -1,0 +1,6 @@
+.prose > p > code {
+  padding:2px;
+  border-radius: 2px;
+  background-color: #333;
+  color:rgb(189, 186, 0);
+}
